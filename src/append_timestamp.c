@@ -96,9 +96,7 @@ void *appendTime(char *payload) {
 
    char commaOrSpace = ',';
 
-   // minimal valid json length: {"_":1} => 7 chars
-   // TODO: add another test based on the actual string.. ;)
-   // ==> IDEA: we could check if there is at least ONE ':' .. ??
+   // minimal valid json length, with at least one prop: {"_":1} => 7 chars
    if (payloadlen < 7 || strstr(payload, ":") == NULL) {
       commaOrSpace = ' ';
    }

@@ -64,26 +64,9 @@ bool isJsonPayload(char *payload) {
    return msgStartsWithBracket && findLastBracket(payload) > 0;
 }
 
-#define USE_OLD_TIME_WAY (false)
-
 void *appendTime(char *payload) {
    const bool payloadIncludesTime = strstr(payload, "\"__t\":") != NULL;
    if (payloadIncludesTime) return payload;
-
-#if USE_OLD_TIME_WAY
-
-   struct timespec spec;
-   clock_gettime(CLOCK_REALTIME, &spec);
-   int ms = (int)round(spec.tv_nsec / 1.0e6);  // convert nanoseconds to milliseconds
-
-   time_t tt = time(NULL);
-   struct tm tm = *localtime(&tt);
-
-   // calculate new length
-   size_t payloadlen = strlen(payload);
-   size_t newPayloadlen = payloadlen + strlen(",'__t':'2020.11.28 12:44:32.555' }") + 2 /* spare */;
-
-#else
 
    struct timespec ts;
    struct tm *ti;
@@ -94,8 +77,6 @@ void *appendTime(char *payload) {
    // calculate new length
    size_t payloadlen = strlen(payload);
    size_t newPayloadlen = payloadlen + strlen(",'__t':'2020-11-28T12:44:32.555Z' }") + 2 /* spare */;
-
-#endif
 
    // alloc new payload!
    char *newPayload = mosquitto_calloc(1, newPayloadlen);
@@ -120,21 +101,6 @@ void *appendTime(char *payload) {
       commaOrSpace = ' ';
    }
 
-#if USE_OLD_TIME_WAY
-
-   // append timestamp
-   snprintf(pp, newPayloadlen - idxOfEndBracket, "%c\"__t\":\"%d.%02d.%02d %02d:%02d:%02d.%03d\" }",
-            commaOrSpace,
-            tm.tm_year + 1900,
-            tm.tm_mon + 1,
-            tm.tm_mday,
-            tm.tm_hour,
-            tm.tm_min,
-            tm.tm_sec,
-            ms);
-
-#else
-
    char time_buf[20];
    strftime(time_buf, sizeof(time_buf), "%Y-%m-%dT%H:%M:%S", ti);
 
@@ -143,16 +109,12 @@ void *appendTime(char *payload) {
             commaOrSpace,
             time_buf,
             ms);
-#endif
 
    return newPayload;
 }
 
 static int callback_message(int event, void *event_data, void *userdata) {
    struct mosquitto_evt_message *ed = event_data;
-
-   //UNUSED(event);
-   //UNUSED(userdata);
 
    if (ed->payload == NULL) {
       mosquitto_log_printf(MOSQ_LOG_DEBUG, "payload is NULL!");
@@ -194,18 +156,10 @@ int mosquitto_plugin_version(int supported_version_count, const int *supported_v
 }
 
 int mosquitto_plugin_init(mosquitto_plugin_id_t *identifier, void **user_data, struct mosquitto_opt *opts, int opt_count) {
-   //UNUSED(user_data);
-   //UNUSED(opts);
-   //UNUSED(opt_count);
-
    mosq_pid = identifier;
    return mosquitto_callback_register(mosq_pid, MOSQ_EVT_MESSAGE, callback_message, NULL, NULL);
 }
 
 int mosquitto_plugin_cleanup(void *user_data, struct mosquitto_opt *opts, int opt_count) {
-   //UNUSED(user_data);
-   //UNUSED(opts);
-   //UNUSED(opt_count);
-
    return mosquitto_callback_unregister(mosq_pid, MOSQ_EVT_MESSAGE, callback_message, NULL);
 }

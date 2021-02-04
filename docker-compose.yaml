@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  mosquitto2:
+    #image: eclipse-mosquitto:2.0.6
+    build: .
+    container_name: mosquitto2
+    #restart: unless-stopped
+
+    ports:
+      - 1883:1883
+      - 9001:9001
+
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:rw
+      - ./mosquitto/plugins:/mosquitto/plugins:rw
+      - ./mosquitto/log:/mosquitto/log:rw
+      - ./mosquitto/data:/mosquitto/data:rw

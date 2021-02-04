@@ -1,4 +1,4 @@
-name: build our images
+name: just a release test
 
 on:
 #  push:
@@ -14,5 +14,8 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Available platforms
+        run: echo ${{ steps.get_version.outputs.VERSION }}
 
 # EOF

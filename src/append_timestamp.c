@@ -27,6 +27,8 @@ Contributors:
 #include "mosquitto_plugin.h"
 #include "mqtt_protocol.h"
 
+#define JSON_TIME_KEY "\"__t\""
+
 static mosquitto_plugin_id_t *mosq_pid = NULL;
 
 size_t findLastBracket(char *payload) {
@@ -76,7 +78,7 @@ void *appendTime(char *payload) {
 
    // calculate new length
    size_t payloadlen = strlen(payload);
-   size_t newPayloadlen = payloadlen + strlen(",'__t':'2020-11-28T12:44:32.555Z' }") + 2 /* spare */;
+   size_t newPayloadlen = payloadlen + strlen("," JSON_TIME_KEY ":'2020-11-28T12:44:32.555Z' }") + 2 /* spare */;
 
    // alloc new payload!
    char *newPayload = mosquitto_calloc(1, newPayloadlen);
@@ -105,7 +107,8 @@ void *appendTime(char *payload) {
    strftime(time_buf, sizeof(time_buf), "%Y-%m-%dT%H:%M:%S", ti);
 
    // append timestamp
-   snprintf(pp, newPayloadlen - idxOfEndBracket, "%c\"__t\":\"%s.%03dZ\" }",
+   snprintf(pp, newPayloadlen - idxOfEndBracket,
+            "%c" JSON_TIME_KEY ":\"%s.%03dZ\" }",
             commaOrSpace,
             time_buf,
             ms);

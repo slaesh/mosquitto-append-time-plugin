@@ -67,7 +67,7 @@ bool isJsonPayload(char *payload) {
 }
 
 void *appendTime(char *payload) {
-   const bool payloadIncludesTime = strstr(payload, "\"__t\":") != NULL;
+   const bool payloadIncludesTime = strstr(payload, JSON_TIME_KEY ":") != NULL;
    if (payloadIncludesTime) return payload;
 
    struct timespec ts;

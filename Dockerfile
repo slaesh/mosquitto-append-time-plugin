@@ -1,7 +1,7 @@
 FROM eclipse-mosquitto:2.0.13 AS builder
 
 RUN apk add make git gcc g++
-RUN git clone --depth 1 --branch v2.0.9 https://github.com/eclipse/mosquitto.git mosquitto-src
+RUN git clone --depth 1 --branch v2.0.13 https://github.com/eclipse/mosquitto.git mosquitto-src
 
 COPY ./src mosquitto-src/plugins/append_timestamp
 
